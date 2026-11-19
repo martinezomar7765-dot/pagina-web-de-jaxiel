@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial para desarrollo móvil</title>
+<style>
+:root{--azul:#000000;--acento:#57850e;--fondo:#d6ebfa;--panel:#fefffb;--texto:#1f3550;--tabla:#eef6fc;--oro:#e0b84c}
+[data-tema="oscuro"]{--azul:#0d1b2e;--acento:#5aa9f0;--fondo:#10202f;--panel:#16293c;--texto:#d7e6f5;--tabla:#1a2f45}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:var(--fondo);color:var(--texto);line-height:1.6}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif}
+
+/* ---------- Encabezado ---------- */
+.encabezado{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.6rem 1rem;background:linear-gradient(90deg,#1e3a5f,#25507d);color:#fff}
+.encabezado h1{margin:0;font-size:1.5rem;text-align:center;flex:1}
+.grupo{display:flex;align-items:center;gap:.5rem}
+.logo{width:44px;height:44px;border-radius:50%;background:var(--oro);color:#1e3a5f;display:grid;place-items:center;font:700 1.3rem Georgia,serif}
+.btn-h{width:44px;height:44px;border:2px solid #fff8;border-radius:6px;background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;transition:.2s}
+.btn-h:hover,.btn-h[aria-pressed="true"]{background:#ffffff2a}
+.btn-h:focus-visible,.btn:focus-visible,h2.sec:focus-visible,summary:focus-visible{outline:3px solid var(--oro);outline-offset:2px}
+
+/* ---------- Layout con dos paneles plegables ---------- */
+.layout{--wi:230px;--wd:250px;display:grid;grid-template-columns:var(--wi) minmax(0,1fr) var(--wd);min-height:calc(100vh - 64px);transition:grid-template-columns .3s ease}
+.layout.cierra-izq{--wi:0px}
+.layout.cierra-der{--wd:0px}
+.menu,.info{position:sticky;top:64px;align-self:start;height:calc(100vh - 64px);overflow:hidden;background:var(--panel)}
+.panel-int{height:100%;overflow:auto;padding:1rem}
+.menu .panel-int{width:230px}
+.info .panel-int{width:250px;font-size:.92rem}
+.cierra-izq .menu,.cierra-der .info{visibility:hidden;transition:visibility 0s .3s}
+.velo{display:none}
+
+.menu input{width:100%;padding:.55rem;border:1px solid #9bb8d1;border-radius:6px;background:var(--tabla);color:var(--texto)}
+.menu a{display:block;padding:.4rem .5rem;margin-top:.3rem;border-radius:6px;color:var(--texto);text-decoration:none}
+.menu a:hover,.menu a.activo{background:var(--acento);color:#fff}
+
+.info h3{margin:.2rem 0 .3rem}
+.info a{color:var(--acento)}
+.info details{border-bottom:1px solid #9bb8d155;padding:.5rem 0}
+.info summary{cursor:pointer;font:700 1rem Georgia,serif;color:var(--acento)}
+.info details p,.info details ul{margin:.5rem 0 0}
+.info ul{padding-left:1.1rem}
+kbd{background:#0002;border:1px solid #0003;border-radius:4px;padding:0 .35rem;font-size:.85em}
+.contador{font-weight:700}
+
+/* ---------- Contenido ---------- */
+main{padding:2rem 2.5rem;min-width:0}
+.titulo{font-size:2.6rem;color:var(--azul);margin:.5rem 0}
+[data-tema="oscuro"] .titulo{color:var(--acento)}
+.intro{max-width:620px}
+hr{border:0;border-top:2px solid var(--azul);margin:1.5rem 0}
+.barra{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0 0}
+.btn{padding:.5rem .9rem;border:2px solid var(--acento);border-radius:8px;background:transparent;color:var(--texto);font:600 .9rem "Segoe UI",Arial,sans-serif;cursor:pointer;transition:.2s}
+.btn:hover{background:var(--acento);color:#fff}
+
+section{scroll-margin-top:80px}
+h2{font-size:2rem;border-left:5px solid var(--acento);padding-left:.8rem;margin-top:2.5rem}
+h2.sec{display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;user-select:none}
+h2.sec::after{content:"▾";font-size:1.3rem;color:var(--acento);transition:transform .3s}
+section.cerrada h2.sec::after{transform:rotate(-90deg)}
+h2.sec:hover{color:var(--acento)}
+h3{color:var(--acento);margin-bottom:.3rem}
+
+/* Animación expandir / minimizar */
+.cuerpo{display:grid;grid-template-rows:1fr;transition:grid-template-rows .35s ease}
+.cuerpo-int{overflow:hidden;min-height:0}
+section.cerrada .cuerpo{grid-template-rows:0fr}
+
+.tabla{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--tabla);font-size:.92rem}
+th{background:var(--azul);color:#fff;text-align:left}
+th,td{padding:.6rem .7rem;border-bottom:1px solid #9bb8d155;vertical-align:top}
+code{background:#0002;padding:.1rem .35rem;border-radius:4px;font-size:.9em}
+pre{background:#12263b;color:#e6f1ff;padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+footer{background:var(--azul);color:#fff;text-align:center;padding:1rem;font-size:.9rem}
+.apa{list-style:none;padding:0}
+.apa li{padding-left:2rem;text-indent:-2rem;margin-bottom:.7rem;word-break:break-word}
+.videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.8rem;margin-top:.8rem}
+.videos a{display:block;padding:.8rem 1rem;background:var(--tabla);border-left:5px solid var(--acento);border-radius:8px;color:var(--texto);text-decoration:none;font-weight:600;transition:.2s}
+.videos a:hover{background:var(--acento);color:#fff;transform:translateY(-2px)}
+
+/* ---------- Pantallas pequeñas: paneles como cajones ---------- */
+@media(max-width:1000px){
+ .layout{display:block}
+ .menu,.info{position:fixed;top:64px;bottom:0;height:auto;width:270px;z-index:7;box-shadow:0 0 20px #0006;transition:transform .3s ease,visibility 0s}
+ .menu{left:0}.info{right:0}
+ .menu .panel-int,.info .panel-int{width:100%}
+ .cierra-izq .menu{transform:translateX(-100%)}
+ .cierra-der .info{transform:translateX(100%)}
+ .layout:not(.cierra-izq) .velo,.layout:not(.cierra-der) .velo{display:block;position:fixed;inset:64px 0 0 0;background:#0006;z-index:6}
+}
+@media(max-width:700px){
+ main{padding:1.2rem}.titulo{font-size:2rem}h2{font-size:1.5rem}
+ .encabezado h1{font-size:1.05rem}
+ .logo{display:none}
+}
+</style>
+</head>
+<body>
+<header class="encabezado">
+  <div class="grupo">
+    <div class="logo">M</div>
+    <button id="btnIzq" class="btn-h" aria-label="Mostrar u ocultar menú" aria-pressed="true" title="Menú ( [ )">☰</button>
+  </div>
+  <h1>Tutorial de desarrollo móvil</h1>
+  <div class="grupo">
+    <button id="btnPantalla" class="btn-h" aria-label="Pantalla completa" title="Pantalla completa ( F )">⛶</button>
+    <button id="btnDer" class="btn-h" aria-label="Mostrar u ocultar panel de información" aria-pressed="true" title="Información ( ] )">ℹ</button>
+    <button id="tema" class="btn-h" aria-label="Cambiar tema" title="Cambiar tema">◐</button>
+  </div>
+</header>
+
+<div class="layout" id="layout">
+<div class="velo" id="velo"></div>
+
+<!-- PANEL IZQUIERDO -->
+<aside class="menu" id="panelIzq">
+  <div class="panel-int">
+    <input id="buscar" type="search" placeholder="Buscar tema…">
+    <nav id="nav"></nav>
+  </div>
+</aside>
+
+<main id="contenido">
+<h1 class="titulo">Guía de siete temas</h1>
+<p class="intro">Desde el control de versiones hasta la depuración y seguridad. Usa el menú para saltar entre temas, haz clic en un título para expandirlo o minimizarlo, y usa ⛶ para ver todo en pantalla completa.</p>
+<div class="barra">
+  <button class="btn" id="expandirTodo">⊕ Expandir todo</button>
+  <button class="btn" id="minimizarTodo">⊖ Minimizar todo</button>
+  <button class="btn" id="btnPantalla2">⛶ Pantalla completa</button>
+</div>
+<hr>
+
+<section id="t1"><h2>Control de versiones</h2>
+<h3>Definición</h3>
+<p>Un sistema de control de versiones (VCS) registra los cambios hechos a los archivos de un proyecto a lo largo del tiempo. Permite volver a versiones anteriores, saber quién cambió qué y trabajar en equipo sin pisarse el trabajo.</p>
+<h3>Tipos de sistemas</h3>
+<div class="tabla"><table>
+<tr><th>Tipo</th><th>Cómo funciona</th><th>Ventajas</th><th>Desventajas</th></tr>
+<tr><td><b>Local</b> (RCS)</td><td>Guarda versiones en una base de datos en el mismo equipo.</td><td>Simple, sin red.</td><td>Sin colaboración; un fallo de disco pierde todo.</td></tr>
+<tr><td><b>Centralizado</b> (SVN, CVS)</td><td>Un servidor central guarda el historial; cada usuario descarga una copia de trabajo.</td><td>Control de permisos fácil, flujo sencillo.</td><td>Punto único de falla; requiere conexión para casi todo.</td></tr>
+<tr><td><b>Distribuido</b> (Git, Mercurial)</td><td>Cada usuario clona el repositorio completo con todo su historial.</td><td>Trabajo sin conexión, ramas rápidas, respaldo natural.</td><td>Curva de aprendizaje; historiales grandes pesan más.</td></tr>
+</table></div>
+<h3>Funcionamiento</h3>
+<p>Se trabaja en una copia local, se agrupan cambios en <i>commits</i> (instantáneas con autor, fecha y mensaje), se crean <i>ramas</i> para desarrollar en paralelo y se <i>fusionan</i> (merge). En Git, <code>push</code> y <code>pull</code> sincronizan con el repositorio remoto (GitHub, GitLab).</p>
+<h3>Rastreo y gestión de cambios</h3>
+<ul><li><code>git status</code> / <code>git diff</code>: ver qué cambió.</li><li><code>git log</code>: historial de commits.</li><li><code>git blame</code>: quién modificó cada línea.</li><li><code>git revert</code> / <code>git checkout</code>: deshacer o volver a una versión.</li><li><code>git tag</code>: marcar versiones publicadas.</li></ul>
+<h3>Ejemplo</h3>
+<pre><code>git init
+git add .
+git commit -m "Pantalla de login"
+git checkout -b feature/sensores
+git push origin feature/sensores</code></pre>
+</section>
+
+<section id="t2"><h2>Persistencia y acceso a datos</h2>
+<h3>Definición y características</h3>
+<p>Persistencia es la capacidad de conservar los datos de una app aunque se cierre o el dispositivo se reinicie. Características: durabilidad, consistencia, acceso eficiente, seguridad y capacidad de sincronización.</p>
+<h3>Formas de persistencia</h3>
+<div class="tabla"><table>
+<tr><th>Forma</th><th>Descripción</th><th>Datos que almacena</th></tr>
+<tr><td><b>Archivos</b></td><td>Preferencias (SharedPreferences, UserDefaults), almacenamiento interno/externo.</td><td>Configuraciones, texto, JSON, imágenes, audio, caché.</td></tr>
+<tr><td><b>BD local</b></td><td>SQLite, Room, Realm; funciona sin conexión.</td><td>Datos estructurados: usuarios, tareas, historiales.</td></tr>
+<tr><td><b>BD remota</b></td><td>Servidor accedido mediante servicios web (REST/JSON), p. ej. Firebase.</td><td>Datos compartidos entre usuarios y dispositivos.</td></tr>
+</table></div>
+<h3>Control de acceso a medios persistentes</h3>
+<ul><li><b>Biblioteca de clases:</b> APIs del SDK (File, SharedPreferences, Context) que abstraen el acceso.</li><li><b>Clases de SQLite:</b> <code>SQLiteOpenHelper</code>, <code>SQLiteDatabase</code>, <code>Cursor</code>, <code>ContentValues</code> para crear y consultar tablas.</li><li><b>Mapeo relacional de objetos (ORM):</b> convierte objetos en filas (Room, Core Data, GreenDAO) y evita escribir SQL manual.</li></ul>
+<h3>Autenticación y consumo de servicios web</h3>
+<ol><li>El usuario envía credenciales por HTTPS.</li><li>El servidor valida y devuelve un token (JWT/OAuth).</li><li>La app guarda el token de forma segura (Keystore/Keychain).</li><li>Cada petición incluye el token en el encabezado <code>Authorization</code>.</li><li>La app procesa la respuesta JSON y la muestra o guarda localmente.</li></ol>
+<h3>Ejemplo</h3>
+<pre><code>@Entity data class Tarea(@PrimaryKey val id: Int, val titulo: String)
+@Dao interface TareaDao { @Query("SELECT * FROM Tarea") fun todas(): List&lt;Tarea&gt; }
+
+@GET("tareas") suspend fun obtener(@Header("Authorization") t: String): List&lt;Tarea&gt;</code></pre>
+</section>
+
+<section id="t3"><h2>Gestión de sensores</h2>
+<h3>Definición</h3>
+<p>Los sensores son componentes de hardware que miden magnitudes físicas del entorno o del dispositivo y las entregan como datos a las apps.</p>
+<h3>Tipos</h3>
+<ul><li><b>Movimiento:</b> acelerómetro, giroscopio.</li><li><b>Posición:</b> GPS, magnetómetro, orientación.</li><li><b>Ambientales:</b> luz, proximidad, temperatura, presión, humedad.</li><li><b>Biométricos y otros:</b> huella, cámara, micrófono, ritmo cardiaco.</li></ul>
+<h3>Proceso de gestión</h3>
+<ol><li><b>Habilitación:</b> declarar permisos y verificar que el sensor exista.</li><li><b>Obtención:</b> registrar un listener y elegir la frecuencia de muestreo.</li><li><b>Procesamiento:</b> filtrar, interpretar y usar los valores; liberar el sensor al salir.</li></ol>
+<pre><code>val sm = getSystemService(SENSOR_SERVICE) as SensorManager
+val acel = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+sm.registerListener(this, acel, SensorManager.SENSOR_DELAY_NORMAL)
+override fun onSensorChanged(e: SensorEvent) { val x = e.values[0] }</code></pre>
+</section>
+
+<section id="t4"><h2>Uso de recursos multimedia</h2>
+<h3>Definición</h3>
+<p>Son los elementos de imagen, sonido, video y animación que enriquecen la interfaz y la experiencia de una app móvil.</p>
+<h3>Tipos</h3>
+<ul><li><b>Imágenes:</b> PNG, JPG, WebP, vectores (SVG/VectorDrawable).</li><li><b>Audio:</b> MP3, OGG, efectos y música.</li><li><b>Video:</b> MP4, streaming.</li><li><b>Animaciones:</b> Lottie, AnimatedVectorDrawable, transiciones.</li><li><b>Elementos visuales dinámicos:</b> gráficos, canvas, vistas personalizadas.</li></ul>
+<h3>Estructura del proyecto (Android)</h3>
+<ul><li><code>res/drawable</code>: imágenes y vectores.</li><li><code>res/mipmap</code>: íconos de la app.</li><li><code>res/raw</code>: audio y video sin procesar.</li><li><code>assets</code>: archivos accedidos como flujo.</li><li><code>res/anim</code>: animaciones XML.</li></ul>
+<h3>Componentes de software</h3>
+<p><code>ImageView</code> y Glide/Coil (imágenes), <code>MediaPlayer</code> y ExoPlayer (audio/video), <code>VideoView</code>, <code>SoundPool</code> (efectos cortos), <code>Animator</code> y Lottie (animación).</p>
+</section>
+
+<section id="t5"><h2>Servicios y notificaciones</h2>
+<h3>Definición</h3>
+<p>Los servicios son componentes que realizan operaciones sin interfaz visible; las notificaciones informan al usuario de eventos fuera de la app.</p>
+<h3>Tareas en segundo plano</h3>
+<p>Trabajo que continúa sin que la app esté en pantalla: sincronizar datos, descargar archivos, reproducir música. En Android se usan <code>WorkManager</code>, servicios en primer plano y corrutinas; en iOS, <i>Background Tasks</i>.</p>
+<h3>Notificaciones</h3>
+<p>Se crean con un canal (<code>NotificationChannel</code>), un constructor (<code>NotificationCompat.Builder</code>) y el <code>NotificationManager</code>. Pueden ser locales o push (FCM/APNs) y requieren permiso en versiones recientes.</p>
+<h3>Proceso de implementación</h3>
+<ol><li><b>Proveedor de contenido:</b> extender <code>ContentProvider</code>, definir URI y declararlo en el manifiesto para compartir datos.</li><li><b>Tarea en segundo plano:</b> crear un <code>Worker</code>, definir restricciones y encolarlo.</li><li><b>Notificación:</b> crear canal, construir y llamar a <code>notify()</code>.</li></ol>
+<h3>Cómputo en la nube</h3>
+<p>Firebase (autenticación, base de datos, FCM), AWS Amplify, Google Cloud, Azure Mobile Apps: ofrecen almacenamiento, funciones sin servidor, analítica y mensajería.</p>
+</section>
+
+<section id="t6"><h2>Librerías y toolkits para desarrollo móvil</h2>
+<h3>¿Qué son?</h3>
+<p>Una <b>librería</b> es un conjunto de funciones o clases reutilizables que tu código llama para resolver una tarea concreta. Un <b>toolkit</b> es un conjunto más amplio de herramientas, componentes y bibliotecas para construir aplicaciones completas.</p>
+<h3>Librerías especializadas</h3>
+<ul><li><b>Red:</b> Retrofit, OkHttp, Alamofire.</li><li><b>Imágenes:</b> Glide, Coil, Picasso.</li><li><b>Datos:</b> Room, Realm, Gson/Moshi.</li><li><b>Inyección y asincronía:</b> Hilt, Coroutines, RxJava.</li></ul>
+<h3>Toolkits</h3>
+<div class="tabla"><table>
+<tr><th>Toolkit</th><th>Plataforma</th><th>Lenguaje</th></tr>
+<tr><td>Android SDK / Jetpack</td><td>Android nativo</td><td>Kotlin, Java</td></tr>
+<tr><td>iOS SDK / SwiftUI</td><td>iOS nativo</td><td>Swift</td></tr>
+<tr><td>Flutter</td><td>Multiplataforma</td><td>Dart</td></tr>
+<tr><td>React Native</td><td>Multiplataforma</td><td>JavaScript/TypeScript</td></tr>
+<tr><td>Xamarin / .NET MAUI</td><td>Multiplataforma</td><td>C#</td></tr>
+</table></div>
+</section>
+
+<section id="t7"><h2>Depuración y seguridad</h2>
+<h3>¿Qué es?</h3>
+<p>La <b>depuración</b> es encontrar y corregir errores del código. La <b>seguridad</b> es proteger los datos, la comunicación y el acceso de la app frente a amenazas.</p>
+<h3>Herramientas de depuración</h3>
+<ul><li><b>Logcat:</b> registros del sistema y de la app.</li><li><b>Debugger del IDE:</b> puntos de interrupción, ejecución paso a paso, inspección de variables.</li><li><b>Android Studio Profiler:</b> CPU, memoria, red y energía.</li><li><b>Layout Inspector y emuladores:</b> revisar interfaz y probar dispositivos virtuales.</li><li><b>Xcode Instruments</b> (iOS).</li></ul>
+<h3>Buenas prácticas de seguridad</h3>
+<ul><li>Usar HTTPS y validar certificados.</li><li>Guardar secretos en Keystore/Keychain.</li><li>Pedir solo los permisos necesarios.</li><li>Ofuscar el código (R8/ProGuard) y validar entradas.</li></ul>
+</section>
+
+<section id="referencias"><h2>Referencias</h2>
+<ul class="apa">
+<li>Android Developers. (s. f.-a). <i>Android Debug Bridge y depuración en Android Studio</i>. Google. https://developer.android.com/studio/debug</li>
+<li>Android Developers. (s. f.-b). <i>Descripción general de los sensores</i>. Google. https://developer.android.com/develop/sensors-and-location/sensors/sensors_overview</li>
+<li>Android Developers. (s. f.-c). <i>Guardar datos en una base de datos local con Room</i>. Google. https://developer.android.com/training/data-storage/room</li>
+<li>Android Developers. (s. f.-d). <i>Notificaciones</i>. Google. https://developer.android.com/develop/ui/views/notifications</li>
+<li>Android Developers. (s. f.-e). <i>Programación de tareas persistentes con WorkManager</i>. Google. https://developer.android.com/topic/libraries/architecture/workmanager</li>
+<li>Android Developers. (s. f.-f). <i>Recomendaciones de seguridad</i>. Google. https://developer.android.com/privacy-and-security/security-tips</li>
+<li>Apple Inc. (s. f.). <i>Apple developer documentation</i>. https://developer.apple.com/documentation</li>
+<li>Chacon, S., &amp; Straub, B. (2014). <i>Pro Git</i> (2.ª ed.). Apress. https://git-scm.com/book/es/v2</li>
+<li>Flutter. (s. f.). <i>Flutter documentation</i>. https://docs.flutter.dev</li>
+<li>Google. (s. f.). <i>Firebase documentation</i>. https://firebase.google.com/docs</li>
+<li>Square. (s. f.). <i>Retrofit</i>. https://square.github.io/retrofit/</li>
+</ul>
+
+<h3>Videos recomendados</h3>
+<div class="videos">
+<a href="https://www.youtube.com/results?search_query=curso+git+y+github+desde+cero" target="_blank" rel="noopener">▶ Control de versiones: Git y GitHub</a>
+<a href="https://www.youtube.com/results?search_query=android+room+sqlite+tutorial+espa%C3%B1ol" target="_blank" rel="noopener">▶ Persistencia: Room y SQLite</a>
+<a href="https://www.youtube.com/results?search_query=retrofit+android+consumir+api+rest+tutorial" target="_blank" rel="noopener">▶ Servicios web con Retrofit</a>
+<a href="https://www.youtube.com/results?search_query=sensores+android+acelerometro+tutorial" target="_blank" rel="noopener">▶ Gestión de sensores en Android</a>
+<a href="https://www.youtube.com/results?search_query=android+exoplayer+mediaplayer+tutorial" target="_blank" rel="noopener">▶ Recursos multimedia: audio y video</a>
+<a href="https://www.youtube.com/results?search_query=android+notificaciones+workmanager+tutorial" target="_blank" rel="noopener">▶ Notificaciones y tareas en segundo plano</a>
+<a href="https://www.youtube.com/results?search_query=depurar+android+studio+logcat+debugger" target="_blank" rel="noopener">▶ Depuración en Android Studio</a>
+</div>
+</section>
+</main>
+
+<!-- PANEL DERECHO -->
+<aside class="info" id="panelDer">
+  <div class="panel-int">
+    <details open>
+      <summary>Secciones</summary>
+      <p>Abiertas: <span class="contador" id="contador">8 de 8</span></p>
+      <p><a href="#referencias">Ver referencias</a></p>
+    </details>
+    <details open>
+      <summary>Consejo</summary>
+      <p>Prueba el código en el emulador de Android Studio o en el depurador de tu IDE.</p>
+    </details>
+    <details>
+      <summary>Atajos de teclado</summary>
+      <ul>
+        <li><kbd>[</kbd> menú izquierdo</li>
+        <li><kbd>]</kbd> panel derecho</li>
+        <li><kbd>F</kbd> pantalla completa</li>
+        <li><kbd>E</kbd> expandir todo</li>
+        <li><kbd>M</kbd> minimizar todo</li>
+      </ul>
+    </details>
+  </div>
+</aside>
+</div>
+
+<footer>© 2026 Tutorial de desarrollo móvil · HTML, CSS y JavaScript</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const layout = $('layout');
+const nav = $('nav');
+const secciones = [...document.querySelectorAll('main section')];
+const pequena = matchMedia('(max-width:1000px)');
+
+/* ---------- Guardar / leer preferencias ---------- */
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+
+/* ---------- Menú lateral ---------- */
+secciones.forEach(s => {
+  const a = document.createElement('a');
+  a.href = '#' + s.id;
+  a.textContent = s.querySelector('h2').textContent;
+  a.addEventListener('click', () => {
+    abrirSeccion(s, true);
+    if (pequena.matches) panel('izq', false);
+  });
+  nav.appendChild(a);
+});
+
+$('buscar').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  nav.querySelectorAll('a').forEach(a => {
+    a.style.display = a.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+/* ---------- Secciones expandibles / minimizables ---------- */
+secciones.forEach(s => {
+  const h2 = s.querySelector('h2');
+  h2.classList.add('sec');
+  h2.setAttribute('role', 'button');
+  h2.setAttribute('tabindex', '0');
+  h2.setAttribute('aria-expanded', 'true');
+  h2.setAttribute('aria-controls', s.id + '-cuerpo');
+
+  const cuerpo = document.createElement('div');
+  cuerpo.className = 'cuerpo';
+  cuerpo.id = s.id + '-cuerpo';
+  const interno = document.createElement('div');
+  interno.className = 'cuerpo-int';
+  while (h2.nextSibling) interno.appendChild(h2.nextSibling);
+  cuerpo.appendChild(interno);
+  s.appendChild(cuerpo);
+
+  h2.addEventListener('click', () => alternarSeccion(s));
+  h2.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternarSeccion(s); }
+  });
+});
+
+function fijarSeccion(s, abierta) {
+  s.classList.toggle('cerrada', !abierta);
+  s.querySelector('h2').setAttribute('aria-expanded', String(abierta));
+  const inter = s.querySelector('.cuerpo-int');
+  if (abierta) inter.removeAttribute('inert'); else inter.setAttribute('inert', '');
+  actualizarContador();
+}
+function alternarSeccion(s) { fijarSeccion(s, s.classList.contains('cerrada')); }
+function abrirSeccion(s) { fijarSeccion(s, true); }
+function expandirTodo() { secciones.forEach(s => fijarSeccion(s, true)); }
+function minimizarTodo() { secciones.forEach(s => fijarSeccion(s, false)); }
+function actualizarContador() {
+  const abiertas = secciones.filter(s => !s.classList.contains('cerrada')).length;
+  $('contador').textContent = abiertas + ' de ' + secciones.length;
+}
+
+$('expandirTodo').addEventListener('click', expandirTodo);
+$('minimizarTodo').addEventListener('click', minimizarTodo);
+
+/* ---------- Dos paneles plegables ---------- */
+function panel(lado, abierto) {
+  layout.classList.toggle('cierra-' + lado, !abierto);
+  $(lado === 'izq' ? 'btnIzq' : 'btnDer').setAttribute('aria-pressed', String(abierto));
+  if (!pequena.matches) guardar('panel-' + lado, abierto ? '1' : '0');
+}
+function alternarPanel(lado) { panel(lado, layout.classList.contains('cierra-' + lado)); }
+
+function estadoInicialPaneles() {
+  if (pequena.matches) { panel('izq', false); panel('der', false); return; }
+  panel('izq', leer('panel-izq') !== '0');
+  panel('der', leer('panel-der') !== '0');
+}
+estadoInicialPaneles();
+pequena.addEventListener('change', estadoInicialPaneles);
+
+$('btnIzq').addEventListener('click', () => alternarPanel('izq'));
+$('btnDer').addEventListener('click', () => alternarPanel('der'));
+$('velo').addEventListener('click', () => { panel('izq', false); panel('der', false); });
+
+/* ---------- Pantalla completa ---------- */
+const btnsPantalla = [$('btnPantalla'), $('btnPantalla2')];
+function alternarPantalla() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+btnsPantalla.forEach(b => b.addEventListener('click', alternarPantalla));
+document.addEventListener('fullscreenchange', () => {
+  const activa = !!document.fullscreenElement;
+  $('btnPantalla').textContent = activa ? '🗗' : '⛶';
+  $('btnPantalla').setAttribute('aria-label', activa ? 'Salir de pantalla completa' : 'Pantalla completa');
+  $('btnPantalla2').textContent = activa ? '🗗 Salir de pantalla completa' : '⛶ Pantalla completa';
+});
+if (!document.fullscreenEnabled) btnsPantalla.forEach(b => b.style.display = 'none'); // p. ej. iPhone
+
+/* ---------- Tema claro / oscuro ---------- */
+const raiz = document.documentElement;
+if (leer('tema') === 'oscuro') raiz.dataset.tema = 'oscuro';
+$('tema').addEventListener('click', () => {
+  const oscuro = raiz.dataset.tema === 'oscuro';
+  raiz.dataset.tema = oscuro ? 'claro' : 'oscuro';
+  guardar('tema', raiz.dataset.tema);
+});
+
+/* ---------- Atajos de teclado ---------- */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  const k = e.key.toLowerCase();
+  if (k === '[') alternarPanel('izq');
+  else if (k === ']') alternarPanel('der');
+  else if (k === 'f' && document.fullscreenEnabled) alternarPantalla();
+  else if (k === 'e') expandirTodo();
+  else if (k === 'm') minimizarTodo();
+});
+
+/* ---------- Sección activa en el menú ---------- */
+function actualizar() {
+  let actual = '';
+  secciones.forEach(s => { if (s.getBoundingClientRect().top < 150) actual = s.id; });
+  nav.querySelectorAll('a').forEach(a => a.classList.toggle('activo', a.hash === '#' + actual));
+}
+addEventListener('scroll', actualizar, { passive: true });
+actualizar();
+actualizarContador();
+
+/* Si se entra con un #hash a una sección, asegurarse de que esté abierta */
+if (location.hash) {
+  const s = document.querySelector(location.hash);
+  if (s && s.matches('main section')) abrirSeccion(s);
+}
+</script>
+</body>
+</html>
